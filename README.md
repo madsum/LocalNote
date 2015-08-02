@@ -1,2 +1,0 @@
-# LocalNote
-Andoid applicaion 

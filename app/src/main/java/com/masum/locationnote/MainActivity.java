@@ -1,5 +1,6 @@
 package com.masum.locationnote;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -7,10 +8,19 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
-    @Override
+    private android.support.v7.widget.Toolbar toolbar;
+
+    public static final String TAG = "note";
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
     }
 
     @Override
@@ -28,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.note) {
+            startActivity(new Intent(this, MyEditor.class));
             return true;
         }
 

@@ -1,4 +1,4 @@
-package com.masum.localnote;
+package com.masum.locationnote;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
