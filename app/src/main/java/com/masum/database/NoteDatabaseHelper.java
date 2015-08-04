@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class NoteDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "noteTable.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
 
     public NoteDatabaseHelper(Context context) {

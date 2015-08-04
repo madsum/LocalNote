@@ -3,15 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
     <item
-        android:id="@+id/note"
-        android:icon="@drawable/ic_note_add_black_24dp"
-        android:orderInCategory="200"
+        android:id="@+id/menu_new_note"
+        android:icon="@drawable/new_note"
+        android:orderInCategory="100"
         android:title="@string/new_note"
         app:showAsAction="ifRoom" />
+
     <item
-        android:id="@+id/camera"
-        android:icon="@drawable/ic_local_see_black_24dp"
-        android:orderInCategory="200"
+        android:id="@+id/menu_list_activity"
+        android:icon="@drawable/list_activity"
+        android:orderInCategory="100"
+        android:title="@string/view_all_notes"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_camera"
+        android:icon="@drawable/camera"
+        android:orderInCategory="100"
         android:title="@string/camera"
         app:showAsAction="ifRoom" />
 </menu>

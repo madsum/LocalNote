@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.masum.locationnote.MyEditor">
+    tools:context="com.masum.locationnote.NoteEditor">
 
     <include
         android:id="@+id/app_bar"
@@ -21,13 +21,14 @@
         android:orientation="horizontal">
 
         <EditText
+            android:id="@+id/etEditorTilte"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Title" />
 
-        <TextView
-            android:id="@+id/tvDate"
+        <EditText
+            android:id="@+id/etEditorDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
@@ -35,6 +36,7 @@
     </LinearLayout>
 
     <EditText
+        android:id="@+id/etEditorDescription"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1"

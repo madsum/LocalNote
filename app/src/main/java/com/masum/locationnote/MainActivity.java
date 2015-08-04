@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        setTitle("Map");
 
 
     }
@@ -38,8 +39,15 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.note) {
-            startActivity(new Intent(this, MyEditor.class));
+        if (id == R.id.menu_new_note) {
+            //startActivity(new Intent(this, NoteEditor.class));
+            startActivity(new Intent(this, NoteEditor.class));
+            return true;
+        }
+
+        if (id == R.id.menu_list_activity) {
+            //startActivity(new Intent(this, NoteEditor.class));
+            startActivity(new Intent(this, NoteListActivity.class));
             return true;
         }
 

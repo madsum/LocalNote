@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context="com.masum.locationnote.NoteEditor">
+
+    <item
+        android:id="@+id/editor_save"
+        android:orderInCategory="200"
+        android:title="save"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/editor_save" />
+
+    <item
+        android:id="@+id/editor_cancel"
+        android:orderInCategory="200"
+        android:title="cancel"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/editor_cancel" />
+
+</menu>

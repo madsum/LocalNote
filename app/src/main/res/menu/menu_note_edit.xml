@@ -8,7 +8,7 @@
         android:orderInCategory="200"
         android:title="save"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_action_save"
+        android:icon="@drawable/editor_save"
         />
 
 </menu>
