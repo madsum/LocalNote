@@ -60,9 +60,9 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
 
         public NoteViewHolder(View itemView) {
             super(itemView);
-            tvTile = (TextView) itemView.findViewById(R.id.tvTitle);
-            tvDescription = (TextView) itemView.findViewById(R.id.tvDescription);
-            tvData = (TextView) itemView.findViewById(R.id.tvDate);
+            tvTile = (TextView) itemView.findViewById(R.id.listItemTvTitle);
+            tvDescription = (TextView) itemView.findViewById(R.id.listItemTvDescription);
+            tvData = (TextView) itemView.findViewById(R.id.listItemTvDate);
         }
     }
 }

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -31,27 +30,16 @@ public class NoteEditor extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_editor);
-
         toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        // init all view as requied
         initializeEditor(savedInstanceState);
     }
 
     public void initializeEditor(Bundle savedInstanceState) {
-
-        // set current date.
         mTvDate = (EditText) findViewById(R.id.etEditorDate);
-
-/*        Calendar c = Calendar.getInstance();
-        int day = c.get(Calendar.DATE);
-        int month = c.get(Calendar.MONTH);
-        int year = c.get(Calendar.YEAR);
-        String date = Integer.toString(day)+"/"+Integer.toString(month)+"/"+Integer.toString(year);
-        mTvDate.setText(date);*/
-
         mEtTile = (EditText) findViewById(R.id.etEditorTilte);
         mEtDescription = (EditText) findViewById(R.id.etEditorDescription);
 
@@ -66,7 +54,7 @@ public class NoteEditor extends AppCompatActivity {
             noteUri = extras.getParcelable(NoteContentProvider.CONTENT_ITEM_TYPE);
             fillData(noteUri);
         } else {
-            // new note
+            // a new note so we should set current date
             Calendar c = Calendar.getInstance();
             int day = c.get(Calendar.DATE);
             int month = c.get(Calendar.MONTH);
@@ -74,42 +62,30 @@ public class NoteEditor extends AppCompatActivity {
             String date = Integer.toString(day) + "/" + Integer.toString(month) + "/" + Integer.toString(year);
             mTvDate.setText(date);
         }
-        /*else {
-            fillData(noteUri);
-        }*/
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_note_editor, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.editor_save) {
-            //saveNote();
-            //startActivity(new Intent(this, NoteRecyclerViewActivity.class));
             setResult(RESULT_OK);
             startActivity(new Intent(this, NoteListActivity.class));
-            //finish();
+            finish();
             return true;
         }
 
         if (id == R.id.editor_cancel) {
             // Just go beck to the previous activity
-            //setResult(RESULT_OK);
             finish();
             return true;
         }
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -127,18 +103,6 @@ public class NoteEditor extends AppCompatActivity {
     }
 
     private void fillData(Uri uri) {
-/*
-        if (uri == null) {
-            // It is new note. So set current date in date EditText
-            Calendar c = Calendar.getInstance();
-            int day = c.get(Calendar.DATE);
-            int month = c.get(Calendar.MONTH);
-            int year = c.get(Calendar.YEAR);
-            String date = Integer.toString(day) + "/" + Integer.toString(month) + "/" + Integer.toString(year);
-            mTvDate.setText(date);
-            return;
-        }
-*/
         String[] projection = {NoteTable.COLUMN_TITLE,
                 NoteTable.COLUMN_DESCRIPTION, NoteTable.COLUMN_DATE};
         Cursor cursor = getContentResolver().query(uri, projection, null, null,
@@ -148,23 +112,13 @@ public class NoteEditor extends AppCompatActivity {
 
             mTvDate.setText(cursor.getString(cursor.
                     getColumnIndexOrThrow(NoteTable.COLUMN_DATE)));
-            Log.i(MainActivity.TAG, "found date: " + cursor.getString(cursor.
-                    getColumnIndexOrThrow(NoteTable.COLUMN_DATE)));
-
             mEtTile.setText(cursor.getString(cursor.
                     getColumnIndexOrThrow(NoteTable.COLUMN_TITLE)));
-            Log.i(MainActivity.TAG, "found title: " + cursor.getString(cursor.
-                    getColumnIndexOrThrow(NoteTable.COLUMN_TITLE)));
-
             mEtDescription.setText(cursor.getString(cursor.
                     getColumnIndexOrThrow(NoteTable.COLUMN_DESCRIPTION)));
-            Log.i(MainActivity.TAG, "found description: " + cursor.getString(cursor.
-                    getColumnIndexOrThrow(NoteTable.COLUMN_DESCRIPTION)));
-
             // always close the cursor
             cursor.close();
         }
-
     }
 
     private void saveNote() {
@@ -172,12 +126,13 @@ public class NoteEditor extends AppCompatActivity {
         String title = mEtTile.getText().toString();
         String description = mEtDescription.getText().toString();
 
-        Log.i(MainActivity.TAG, "title:" + title);
-        Log.i(MainActivity.TAG, "description:" + description);
+
         // only save if either summary or description is available
-        if (description.length() == 0 && title.length() == 0) {
-            Log.i(MainActivity.TAG, "just retrun coz 0 len.");
-            return;
+        if (description.length() == 0)  {
+            description = "No description added";
+        }
+        if(title.length() == 0){
+            title = "No titile added";
         }
 
         ContentValues values = new ContentValues();

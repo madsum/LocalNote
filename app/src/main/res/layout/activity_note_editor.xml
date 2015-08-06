@@ -35,7 +35,7 @@
             android:text="date" />
     </LinearLayout>
 
-    <EditText
+ <!--   <EditText
         android:id="@+id/etEditorDescription"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -43,7 +43,14 @@
         android:background="@drawable/edior_backgound2"
         android:gravity="top"
         android:hint="Description"
-        android:scrollbars="vertical" />
+        android:scrollbars="vertical" />-->
+    <EditText
+        android:id="@+id/etEditorDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/blue_lines"
+        android:gravity="top"
+        android:hint="Description" />
 
 
 </LinearLayout>

@@ -26,9 +26,9 @@ public class NoteTable {
             TABLE_NOTE
             + "( "
             + COLUMN_ID + " INTEGER PRIMARY  KEY AUTOINCREMENT, "
-            + COLUMN_TITLE  +" VARCHAR(255) NOT NULL, "
+            + COLUMN_TITLE  +" VARCHAR(255), "
             + COLUMN_DESCRIPTION + " VARCHAR(1024), "
-            + COLUMN_DATE + " VARCHAR(255) NOT NULL,"
+            + COLUMN_DATE + " VARCHAR(255),"
             + COLUMN_LATITUDE + " VARCHAR(30),"
             + COLUMN_LONGITUDE + " VARCHAR(30),"
             + COLUMN_IMAGE + " VARCHAR(255)"
@@ -53,7 +53,7 @@ public class NoteTable {
         Log.w(MainActivity.TAG, "Upgrading database from version "
                 + oldVersion + " to " + newVersion
                 + ", which will destroy all old data");
-        database.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTE);
+        database.execSQL(DROP_TABLE);
         onCreate(database);
     }
 
