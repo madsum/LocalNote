@@ -15,4 +15,5 @@
     <string name="title_activity_note_recycler_view">NoteRecyclerViewActivity</string>
     <string name="view_all_notes">View all notes</string>
     <string name="title_activity_maps">Map</string>
+    <string name="title_activity_current_location">CurrentLocation</string>
 </resources>
