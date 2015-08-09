@@ -32,18 +32,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:text="date" />
+            android:textSize="15dp"
+            android:text="date"
+            />
     </LinearLayout>
 
- <!--   <EditText
-        android:id="@+id/etEditorDescription"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:background="@drawable/edior_backgound2"
-        android:gravity="top"
-        android:hint="Description"
-        android:scrollbars="vertical" />-->
+    <EditText
+        android:id="@+id/etEditorAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:textSize="15dp"
+        android:gravity="top" />
+
     <EditText
         android:id="@+id/etEditorDescription"
         android:layout_width="match_parent"
@@ -51,6 +52,5 @@
         android:background="@drawable/blue_lines"
         android:gravity="top"
         android:hint="Description" />
-
 
 </LinearLayout>

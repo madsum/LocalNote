@@ -88,10 +88,10 @@
             android:name="com.littlefluffytoys.littlefluffylocationlibrary.PassiveLocationChangedReceiver"
             android:exported="true" />
 
-        <activity
+<!--        <activity
             android:name=".CurrentLocation"
             android:label="@string/title_activity_current_location" >
-        </activity>
+        </activity>-->
     </application>
 
 </manifest>

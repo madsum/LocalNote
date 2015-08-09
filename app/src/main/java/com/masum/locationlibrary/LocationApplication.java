@@ -19,18 +19,24 @@ public class LocationApplication extends Application {
     public static String mTotalAddress = null;
     public static String mStreet = null;
     public static String mCountry = null;
+    public static LocationError mLocationError;
     @Override
     public void onCreate() {
         super.onCreate();
+        mLocationError = new LocationError();
+        initializeLocationLibrary();
         mLocationInfo = new LocationInfo(this);
         setCurrentLocationInfo();
         setCompleteAddress();
-        Log.i(MapsActivity.TAG, "##### Application called: ");
+       // Log.i(MapsActivity.TAG, "##### Application called: ");
        // Log.d("TestApplication", "onCreate()");
 
         // output debug to LogCat, with tag LittleFluffyLocationLibrary
        // LocationLibrary.showDebugOutput(true);
 
+    }
+
+    private void initializeLocationLibrary(){
         try {
             // in most cases the following initialising code using defaults is probably sufficient:
             //
@@ -38,11 +44,13 @@ public class LocationApplication extends Application {
             //
             // however for the purposes of the test app, we can request unrealistically frequent location broadcasts
             // every 1 minute, and force a location update if there hasn't been one for 2 minutes.
-           // LocationLibrary.initialiseLibrary(getBaseContext(), 60 * 10000, 60 * 60 * 1000, "com.masum.locationnote");
+            // LocationLibrary.initialiseLibrary(getBaseContext(), 60 * 10000, 60 * 60 * 1000, "com.masum.locationnote");
             LocationLibrary.initialiseLibrary(getBaseContext(), "com.masum.locationnote");
         }
         catch (UnsupportedOperationException ex) {
+            mLocationError.LocationLibraryInitError = true;
             Log.d("LocationApplication", "UnsupportedOperationException thrown - the device doesn't have any location providers");
+
         }
     }
 
@@ -52,6 +60,7 @@ public class LocationApplication extends Application {
             Log.i(MapsActivity.TAG, "setCurrentLocationInfo succeesed: "+mLocationInfo.lastLat);
         }
         else {
+            mLocationError.LocationInfoError = true;
             Log.i(MapsActivity.TAG, "setCurrentLocationInfo failed. ");
         }
     }
@@ -77,8 +86,17 @@ public class LocationApplication extends Application {
                 Log.w(MainActivity.TAG, "No Address returned!");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           // e.printStackTrace();
+            mLocationError.AddressError = true;
+            Log.e(MapsActivity.TAG, e.getMessage());
             Log.w(MainActivity.TAG, "Canont get Address!");
         }
     }
+
+   public static class LocationError{
+       public  static boolean LocationLibraryInitError = false;
+       public static boolean LocationInfoError = false;
+       public static boolean AddressError = false;
+    }
 }
+

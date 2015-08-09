@@ -18,6 +18,7 @@ public class NoteTable {
     public static final String COLUMN_DATE = "date";
     public static final String COLUMN_LATITUDE = "latitude";
     public static final String COLUMN_LONGITUDE = "longitue";
+    public static final String COLUMN_ADDRESS = "address";
     public static final String COLUMN_IMAGE = "image";
 
 
@@ -29,8 +30,9 @@ public class NoteTable {
             + COLUMN_TITLE  +" VARCHAR(255), "
             + COLUMN_DESCRIPTION + " VARCHAR(1024), "
             + COLUMN_DATE + " VARCHAR(255),"
-            + COLUMN_LATITUDE + " VARCHAR(30),"
-            + COLUMN_LONGITUDE + " VARCHAR(30),"
+            + COLUMN_LATITUDE + " REAL,"
+            + COLUMN_LONGITUDE + " REAL,"
+            + COLUMN_ADDRESS + " VARCHAR(255),"
             + COLUMN_IMAGE + " VARCHAR(255)"
             +");";
     // Database drop table SQL statement

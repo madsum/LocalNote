@@ -98,8 +98,10 @@ public class NoteListActivity extends AppCompatActivity implements
     @Override
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {NoteTable.COLUMN_ID, NoteTable.COLUMN_TITLE};
+        // last parameter is how to sort query
+        // column_name DESC OR column_name ASC
         android.support.v4.content.CursorLoader  cursorLoader = new android.support.v4.content.CursorLoader(this,
-                NoteContentProvider.CONTENT_URI, projection, null, null, null);
+                NoteContentProvider.CONTENT_URI, projection, null, null, NoteTable.COLUMN_ID+" DESC");
         Log.i(MainActivity.TAG, "NoteListActivity: onCreateLoader called!");
         return cursorLoader;
     }

@@ -179,7 +179,7 @@ public class NoteContentProvider extends ContentProvider {
         String[] available = { NoteTable.COLUMN_ID,
                 NoteTable.COLUMN_TITLE, NoteTable.COLUMN_DESCRIPTION,
                 NoteTable.COLUMN_DATE, NoteTable.COLUMN_LATITUDE,
-                NoteTable.COLUMN_LONGITUDE, NoteTable.COLUMN_IMAGE };
+                NoteTable.COLUMN_LONGITUDE, NoteTable.COLUMN_IMAGE, NoteTable.COLUMN_ADDRESS };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

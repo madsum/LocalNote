@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -23,8 +24,11 @@ public class NoteEditor extends AppCompatActivity {
     private android.support.v7.widget.Toolbar toolbar;
     private EditText mEtTile;
     private EditText mEtDescription;
+    private EditText mEtAddress;
     private EditText mTvDate;
     private Uri noteUri;
+    private float mLongitude = 0;
+    private float mLatitude = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,7 @@ public class NoteEditor extends AppCompatActivity {
         mTvDate = (EditText) findViewById(R.id.etEditorDate);
         mEtTile = (EditText) findViewById(R.id.etEditorTilte);
         mEtDescription = (EditText) findViewById(R.id.etEditorDescription);
+        mEtAddress = (EditText) findViewById(R.id.etEditorAddress);
 
         Bundle extras = getIntent().getExtras();
 
@@ -52,15 +57,24 @@ public class NoteEditor extends AppCompatActivity {
         // Or passed from the other activity
         if (extras != null) {
             noteUri = extras.getParcelable(NoteContentProvider.CONTENT_ITEM_TYPE);
-            fillData(noteUri);
-        } else {
-            // a new note so we should set current date
-            Calendar c = Calendar.getInstance();
-            int day = c.get(Calendar.DATE);
-            int month = c.get(Calendar.MONTH);
-            int year = c.get(Calendar.YEAR);
-            String date = Integer.toString(day) + "/" + Integer.toString(month) + "/" + Integer.toString(year);
-            mTvDate.setText(date);
+            if (noteUri != null) {
+                // it is old note to open with uri. So fill info
+                fillData(noteUri);
+            } else {
+                mLongitude = extras.getFloat("longitude");
+                mLatitude = extras.getFloat("latitude");
+                // Set address
+                mEtAddress.setText(extras.getString("address"));
+
+
+                // a new note so we should set current date
+                Calendar c = Calendar.getInstance();
+                int day = c.get(Calendar.DATE);
+                int month = c.get(Calendar.MONTH);
+                int year = c.get(Calendar.YEAR);
+                String date = Integer.toString(day) + "/" + Integer.toString(month) + "/" + Integer.toString(year);
+                mTvDate.setText(date);
+            }
         }
     }
 
@@ -104,9 +118,16 @@ public class NoteEditor extends AppCompatActivity {
 
     private void fillData(Uri uri) {
         String[] projection = {NoteTable.COLUMN_TITLE,
-                NoteTable.COLUMN_DESCRIPTION, NoteTable.COLUMN_DATE};
-        Cursor cursor = getContentResolver().query(uri, projection, null, null,
-                null);
+                NoteTable.COLUMN_DESCRIPTION, NoteTable.COLUMN_DATE,
+                NoteTable.COLUMN_ADDRESS};
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(uri, projection, null, null,
+                    null);
+        } catch (Exception e) {
+            Log.e(MapsActivity.TAG, "ex: " + e.getMessage());
+        }
+
         if (cursor != null) {
             cursor.moveToFirst();
 
@@ -116,6 +137,8 @@ public class NoteEditor extends AppCompatActivity {
                     getColumnIndexOrThrow(NoteTable.COLUMN_TITLE)));
             mEtDescription.setText(cursor.getString(cursor.
                     getColumnIndexOrThrow(NoteTable.COLUMN_DESCRIPTION)));
+            mEtAddress.setText(cursor.getString(cursor.
+                    getColumnIndexOrThrow(NoteTable.COLUMN_ADDRESS)));
             // always close the cursor
             cursor.close();
         }
@@ -125,20 +148,27 @@ public class NoteEditor extends AppCompatActivity {
         String date = mTvDate.getText().toString();
         String title = mEtTile.getText().toString();
         String description = mEtDescription.getText().toString();
+        String address = mEtAddress.getText().toString();
 
 
         // only save if either summary or description is available
-        if (description.length() == 0)  {
+        if (description.length() == 0) {
             description = "No description added";
         }
-        if(title.length() == 0){
+        if (title.length() == 0) {
             title = "No titile added";
+        }
+        if (address.length() == 0) {
+            address = "No address added";
         }
 
         ContentValues values = new ContentValues();
         values.put(NoteTable.COLUMN_DATE, date);
         values.put(NoteTable.COLUMN_TITLE, title);
         values.put(NoteTable.COLUMN_DESCRIPTION, description);
+        values.put(NoteTable.COLUMN_ADDRESS, address);
+        values.put(NoteTable.COLUMN_LATITUDE, mLatitude);
+        values.put(NoteTable.COLUMN_LONGITUDE, mLongitude);
 
         if (noteUri == null) {
             // New note

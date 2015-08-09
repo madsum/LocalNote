@@ -1,11 +1,18 @@
 package com.masum.locationnote;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -29,39 +36,51 @@ public class MapsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        setUpMapIfNeeded();
+        boolean status = checkGpsNetworkStatus();
+        if(!status){
+            setUpMapIfNeeded();
+        }
         toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         setTitle("Map");
     }
 
+    private boolean checkGpsNetworkStatus(){
 
-    private void setCurretnLocation() {
-       // locationInfo = LocationApplication.mLocationInfo;
-      //  currentAddress = LocationApplication.mTotalAddress;
-      //  Log.i(TAG, "Addres: " + currentAddress);
-        if (LocationApplication.mLocationInfo != null) {
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
-                    .zoom(17)                   // Sets the zoom
-                    .bearing(90)                // Sets the orientation of the camera to east
-                    .tilt(30)                   // Sets the tilt of the camera to 30 degrees
-                    .build();                   // Creates a CameraPosition from the builder
-
-            marker =  mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
-                    .title(LocationApplication.mCountry)
-                    .snippet(LocationApplication.mStreet));
-            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            marker.showInfoWindow();
-        }else{
-            Log.e(TAG, "no location found");
+        boolean status = isLocationEnabled(this);
+        if(!status){
+            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+            alertDialog.setTitle("Fatal error");
+            alertDialog.setMessage("First enbale network and GPS. Then retry again");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            finish();
+                        }
+                    });
+            alertDialog.show();
         }
+      return status;
     }
 
-    private void addMarker(){
-       // Marker marker = mMap.addMarker(new)
+    public static boolean isLocationEnabled(Context context) {
+        int locationMode = 0;
+        String locationProviders;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            try {
+                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+            }
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+        }else{
+            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
     }
 
     @Override
@@ -73,13 +92,24 @@ public class MapsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         if (id == R.id.menu_new_note) {
-            startActivity(new Intent(this, NoteEditor.class));
+            Bundle bundle = null;
+            if( LocationApplication.mLocationInfo != null) {
+                bundle = new Bundle();
+                bundle.putFloat("latitude", LocationApplication.mLocationInfo.lastLat);
+                bundle.putFloat("longitude", LocationApplication.mLocationInfo.lastLong);
+                if(LocationApplication.mTotalAddress == null){
+                    LocationApplication.mTotalAddress = "debug address";
+                }
+                bundle.putString("address", LocationApplication.mTotalAddress);
+            }
+            Intent intent = new Intent(this, NoteEditor.class);
+            if(bundle != null){
+                intent.putExtras(bundle);
+            }
+            startActivity(intent);
             return true;
         }
 
@@ -89,7 +119,10 @@ public class MapsActivity extends AppCompatActivity {
         }
 
         if (id == R.id.menu_current_location) {
-            startActivity(new Intent(this, CurrentLocation.class));
+            LocationApplication application = (LocationApplication) getApplication();
+            application.setCurrentLocationInfo();
+            application.setCompleteAddress();
+            setCurretnLocation();
             return true;
         }
 
@@ -125,20 +158,43 @@ public class MapsActivity extends AppCompatActivity {
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                //setUpMap();
                 setCurretnLocation();
-
             }
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
-    private void setUpMap() {
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+    private void setCurretnLocation() {
+
+        if ( !LocationApplication.mLocationError.LocationLibraryInitError && LocationApplication.mLocationInfo != null) {
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
+                    .zoom(17)                   // Sets the zoom
+                    .bearing(90)                // Sets the orientation of the camera to east
+                    .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                    .build();                   // Creates a CameraPosition from the builder
+
+            if(!LocationApplication.mLocationError.AddressError){
+                // show marker with addess info
+                marker =  mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
+                        .title(LocationApplication.mCountry)
+                        .snippet(LocationApplication.mStreet));
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                marker.showInfoWindow();
+            }else{
+                //Toast.makeText(this, "Current address not found!", Toast.LENGTH_LONG ).show();
+                // show only marker without address info
+                marker =  mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
+                        .title(LocationApplication.mCountry)
+                        .snippet(LocationApplication.mStreet));
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                marker.showInfoWindow();
+                Log.e(MapsActivity.TAG, "no address found in MapActivity");
+            }
+        }else{
+            Toast.makeText(this, "Current location not found!", Toast.LENGTH_LONG ).show();
+            Log.e(TAG, "no location found");
+        }
     }
 }
