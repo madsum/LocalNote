@@ -1,8 +1,6 @@
 package com.masum.locationnote;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,15 +19,17 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.masum.database.NoteTable;
 import com.masum.locationlibrary.LocationApplication;
+import com.masum.utils.Utility;
 
 public class MapsActivity extends AppCompatActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    private   Marker marker;
+    private Marker marker;
     private android.support.v7.widget.Toolbar toolbar;
-   // public LocationInfo locationInfo;
-  //  private String currentAddress;
+
+
     public static final String TAG = "note";
 
     @Override
@@ -37,39 +37,32 @@ public class MapsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         boolean status = checkGpsNetworkStatus();
-        if(!status){
-            setUpMapIfNeeded();
+        if (!status) {
+
         }
+        setUpMapIfNeeded();
         toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         setTitle("Map");
     }
 
-    private boolean checkGpsNetworkStatus(){
+    private boolean checkGpsNetworkStatus() {
 
         boolean status = isLocationEnabled(this);
-        if(!status){
-            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-            alertDialog.setTitle("Fatal error");
-            alertDialog.setMessage("First enbale network and GPS. Then retry again");
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            finish();
-                        }
-                    });
-            alertDialog.show();
+        if (!status) {
+            Utility.displayWarning(this, "Fatal error", "First enable network and GPS. Then retry again");
+            // will close application if no GPS.
+            finish();
         }
-      return status;
+        return status;
     }
 
     public static boolean isLocationEnabled(Context context) {
         int locationMode = 0;
         String locationProviders;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             try {
                 locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
             } catch (Settings.SettingNotFoundException e) {
@@ -77,7 +70,7 @@ public class MapsActivity extends AppCompatActivity {
             }
             return locationMode != Settings.Secure.LOCATION_MODE_OFF;
 
-        }else{
+        } else {
             locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
             return !TextUtils.isEmpty(locationProviders);
         }
@@ -96,35 +89,40 @@ public class MapsActivity extends AppCompatActivity {
 
         if (id == R.id.menu_new_note) {
             Bundle bundle = null;
-            if( LocationApplication.mLocationInfo != null) {
+            LocationApplication locationApplication = (LocationApplication) getApplication();
+            if (locationApplication.mLocationInfo != null) {
                 bundle = new Bundle();
-                bundle.putFloat("latitude", LocationApplication.mLocationInfo.lastLat);
-                bundle.putFloat("longitude", LocationApplication.mLocationInfo.lastLong);
-                if(LocationApplication.mTotalAddress == null){
-                    LocationApplication.mTotalAddress = "debug address";
+                bundle.putFloat(NoteTable.COLUMN_LATITUDE, locationApplication.mLocationInfo.lastLat);
+                bundle.putFloat(NoteTable.COLUMN_LONGITUDE, locationApplication.mLocationInfo.lastLong);
+                if (locationApplication.mTotalAddress == null) {
+                    locationApplication.mTotalAddress = "debug address";
                 }
-                bundle.putString("address", LocationApplication.mTotalAddress);
+                bundle.putString(NoteTable.COLUMN_ADDRESS, locationApplication.mTotalAddress);
             }
             Intent intent = new Intent(this, NoteEditor.class);
-            if(bundle != null){
+            if (bundle != null) {
                 intent.putExtras(bundle);
             }
             startActivity(intent);
             return true;
-        }
-
-        if (id == R.id.menu_list_activity) {
+        } else if (id == R.id.menu_list_activity) {
             startActivity(new Intent(this, NoteListActivity.class));
             return true;
-        }
-
-        if (id == R.id.menu_current_location) {
+        } else if (id == R.id.menu_current_location) {
             LocationApplication application = (LocationApplication) getApplication();
             application.setCurrentLocationInfo();
             application.setCompleteAddress();
             setCurretnLocation();
             return true;
+        } else if (id == R.id.menu_camera) {
+            Bundle bundle = new Bundle();
+            // this start camera for still photo
+            bundle.putInt(NoteTable.COLUMN_IMAGE, CameraActivity.MEDIA_TYPE_IMAGE);
+            Intent intent = new Intent(this, CameraActivity.class);
+            intent.putExtras(bundle);
+            startActivity(intent);
         }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -135,21 +133,6 @@ public class MapsActivity extends AppCompatActivity {
         setUpMapIfNeeded();
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
@@ -164,36 +147,36 @@ public class MapsActivity extends AppCompatActivity {
     }
 
     private void setCurretnLocation() {
-
-        if ( !LocationApplication.mLocationError.LocationLibraryInitError && LocationApplication.mLocationInfo != null) {
+        LocationApplication locationApplication = (LocationApplication) getApplication();
+        if (!locationApplication.mLocationError.LocationLibraryInitError && locationApplication.mLocationInfo != null) {
             CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
+                    .target(new LatLng(locationApplication.mLocationInfo.lastLat, locationApplication.mLocationInfo.lastLong))
                     .zoom(17)                   // Sets the zoom
                     .bearing(90)                // Sets the orientation of the camera to east
                     .tilt(30)                   // Sets the tilt of the camera to 30 degrees
                     .build();                   // Creates a CameraPosition from the builder
 
-            if(!LocationApplication.mLocationError.AddressError){
+            if (!locationApplication.mLocationError.AddressError) {
                 // show marker with addess info
-                marker =  mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
-                        .title(LocationApplication.mCountry)
-                        .snippet(LocationApplication.mStreet));
+                marker = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(locationApplication.mLocationInfo.lastLat, locationApplication.mLocationInfo.lastLong))
+                        .title(locationApplication.mCountry)
+                        .snippet(locationApplication.mStreet));
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                 marker.showInfoWindow();
-            }else{
+            } else {
                 //Toast.makeText(this, "Current address not found!", Toast.LENGTH_LONG ).show();
                 // show only marker without address info
-                marker =  mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(LocationApplication.mLocationInfo.lastLat, LocationApplication.mLocationInfo.lastLong))
-                        .title(LocationApplication.mCountry)
-                        .snippet(LocationApplication.mStreet));
+                marker = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(locationApplication.mLocationInfo.lastLat, locationApplication.mLocationInfo.lastLong))
+                        .title(locationApplication.mCountry)
+                        .snippet(locationApplication.mStreet));
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                 marker.showInfoWindow();
                 Log.e(MapsActivity.TAG, "no address found in MapActivity");
             }
-        }else{
-            Toast.makeText(this, "Current location not found!", Toast.LENGTH_LONG ).show();
+        } else {
+            Toast.makeText(this, "Current location not found!", Toast.LENGTH_LONG).show();
             Log.e(TAG, "no location found");
         }
     }

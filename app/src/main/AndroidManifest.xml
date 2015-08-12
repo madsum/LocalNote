@@ -12,6 +12,12 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!-- Ubertesters library user-permissions -->
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Ubertesters library user-permissions -->
+
     <uses-feature
         android:name="android.hardware.location"
         android:required="true" />
@@ -88,10 +94,18 @@
             android:name="com.littlefluffytoys.littlefluffylocationlibrary.PassiveLocationChangedReceiver"
             android:exported="true" />
 
-<!--        <activity
-            android:name=".CurrentLocation"
-            android:label="@string/title_activity_current_location" >
-        </activity>-->
+        <!-- Ubertesters library token -->
+        <!--<meta-data
+            android:name="ubertesters_organization_token"
+            android:value="56b9aa58-3f62-11e5-a805-22000a9127ac" />-->
+        <!-- Ubertesters library token -->
+        <activity
+            android:name=".CameraActivity"
+            android:label="@string/title_activity_camera" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MapsActivity" />
+        </activity>
     </application>
 
 </manifest>

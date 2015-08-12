@@ -15,11 +15,11 @@ import java.util.Locale;
 
 public class LocationApplication extends Application {
 
-    public static LocationInfo mLocationInfo = null;
-    public static String mTotalAddress = null;
-    public static String mStreet = null;
-    public static String mCountry = null;
-    public static LocationError mLocationError;
+    public  LocationInfo mLocationInfo = null;
+    public  String mTotalAddress = null;
+    public  String mStreet = null;
+    public  String mCountry = null;
+    public LocationError mLocationError;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -28,6 +28,8 @@ public class LocationApplication extends Application {
         mLocationInfo = new LocationInfo(this);
         setCurrentLocationInfo();
         setCompleteAddress();
+        // just innit Ubertesters lib
+       // Ubertesters.initialize(this);
        // Log.i(MapsActivity.TAG, "##### Application called: ");
        // Log.d("TestApplication", "onCreate()");
 

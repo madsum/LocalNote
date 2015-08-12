@@ -4,15 +4,24 @@ package com.masum.locationnote;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.masum.contentprovider.NoteContentProvider;
 import com.masum.database.NoteTable;
@@ -25,10 +34,12 @@ public class NoteEditor extends AppCompatActivity {
     private EditText mEtTile;
     private EditText mEtDescription;
     private EditText mEtAddress;
-    private EditText mTvDate;
+    private TextView mTvDate;
+    private TextView mTvImageName;
     private Uri noteUri;
     private float mLongitude = 0;
     private float mLatitude = 0;
+    private String mImagePath = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +54,12 @@ public class NoteEditor extends AppCompatActivity {
     }
 
     public void initializeEditor(Bundle savedInstanceState) {
-        mTvDate = (EditText) findViewById(R.id.etEditorDate);
+        mTvDate = (TextView) findViewById(R.id.etEditorDate);
         mEtTile = (EditText) findViewById(R.id.etEditorTilte);
         mEtDescription = (EditText) findViewById(R.id.etEditorDescription);
         mEtAddress = (EditText) findViewById(R.id.etEditorAddress);
+        setEditorBackground(mEtDescription);
+        mTvImageName = (TextView) findViewById(R.id.etImageName);
 
         Bundle extras = getIntent().getExtras();
 
@@ -61,10 +74,18 @@ public class NoteEditor extends AppCompatActivity {
                 // it is old note to open with uri. So fill info
                 fillData(noteUri);
             } else {
-                mLongitude = extras.getFloat("longitude");
-                mLatitude = extras.getFloat("latitude");
+                mLongitude = extras.getFloat(NoteTable.COLUMN_LONGITUDE);
+                mLatitude = extras.getFloat(NoteTable.COLUMN_LATITUDE);
                 // Set address
-                mEtAddress.setText(extras.getString("address"));
+                mEtAddress.setText(extras.getString(NoteTable.COLUMN_ADDRESS));
+                mImagePath = extras.getString(NoteTable.COLUMN_IMAGE);
+                if (mImagePath != null) {
+                    String parts[] = mImagePath.split("/");
+                    Log.i(MapsActivity.TAG, "name: " + parts[parts.length - 1]);
+                    // set image name. Array last element is file name
+                    mTvImageName.setText(parts[parts.length - 1]);
+                    mTvImageName.setVisibility(View.VISIBLE);
+                }
 
 
                 // a new note so we should set current date
@@ -76,6 +97,16 @@ public class NoteEditor extends AppCompatActivity {
                 mTvDate.setText(date);
             }
         }
+    }
+
+    void setEditorBackground(EditText editText) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(getResources(), R.drawable.blue_line_bg_png, options);
+        int imageHeight = options.outHeight;
+        int padding = 5;//inner line padding
+        int fontSize = imageHeight - padding;//calculated font size
+        editText.setTextSize(fontSize);//set calculated font size to the edit text
     }
 
     @Override
@@ -107,7 +138,7 @@ public class NoteEditor extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        saveNote();
+        //saveNote();
     }
 
     @Override
@@ -177,5 +208,44 @@ public class NoteEditor extends AppCompatActivity {
             // Update note
             getContentResolver().update(noteUri, values, null, null);
         }
+    }
+
+    public void showPopup(View view) {
+
+        View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
+
+        PopupWindow popupWindow = new PopupWindow(popupView,
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+        // Example: If you have a TextView inside `popup_layout.xml`
+        ImageView imageView = (ImageView) popupView.findViewById(R.id.popupImageView);
+        if (mImagePath != null) {
+            imageView.setImageBitmap(BitmapFactory.decodeFile(mImagePath));
+        }else{
+            Toast.makeText(this, "Image not found!",Toast.LENGTH_LONG).show();
+        }
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        int location[] = new int[2];
+
+        // Get the View's(the one that was clicked in the Fragment) location
+        view.getLocationOnScreen(location);
+
+        // Using location, the PopupWindow will be displayed right under anchorView
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY,
+                location[0], location[1] + view.getHeight());
+
+    }
+
+    public void justClick(View view) {
+        showPopup(view);
+    }
+
+    public void clikMe(View view) {
+        Log.i("","got you");
     }
 }
