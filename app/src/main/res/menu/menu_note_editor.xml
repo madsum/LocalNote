@@ -3,11 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context="com.masum.locationnote.NoteEditor">
 
     <item
-        android:id="@+id/editor_save"
+    android:id="@+id/editor_save"
+    android:orderInCategory="200"
+    android:title="save"
+    app:showAsAction="ifRoom"
+    android:icon="@drawable/editor_save" />
+
+    <item
+        android:id="@+id/editor_delete"
         android:orderInCategory="200"
-        android:title="save"
+        android:title="delete"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/editor_save" />
+        android:icon="@drawable/editor_delete" />
 
     <item
         android:id="@+id/editor_cancel"

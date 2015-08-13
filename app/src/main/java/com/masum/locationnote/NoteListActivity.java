@@ -59,9 +59,7 @@ public class NoteListActivity extends AppCompatActivity implements
             case DELETE_ID:
                 AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
                         .getMenuInfo();
-                Uri uri = Uri.parse(NoteContentProvider.CONTENT_URI + "/"
-                        + info.id);
-                Log.i(MainActivity.TAG, "Info.id: "+info.id);
+                Uri uri = Uri.parse(NoteContentProvider.CONTENT_URI + "/" + info.id);
                 getContentResolver().delete(uri, null, null);
                 fillData();
                 return true;
@@ -123,5 +121,6 @@ public class NoteListActivity extends AppCompatActivity implements
         Uri noteUri = Uri.parse(NoteContentProvider.CONTENT_URI + "/" + id);
         intent.putExtra(NoteContentProvider.CONTENT_ITEM_TYPE, noteUri);
         startActivity(intent);
+        finish();
     }
 }

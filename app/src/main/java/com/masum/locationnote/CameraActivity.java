@@ -13,10 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.masum.database.NoteTable;
 import com.masum.locationlibrary.LocationApplication;
@@ -37,24 +34,18 @@ public class CameraActivity extends AppCompatActivity {
     private static final int CAMERA_CAPTURE_VIDEO_REQUEST_CODE = 200;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
-    public static final String IMAGE = "image";
-    public static final String VIDEO = "video";
     public static final String ACTIVITY_LAUNCH = "launch";
     private File capturedImage = null;
     private boolean activity_launch = true;
-
-
     // directory name to store captured images and videos
     private static final String IMAGE_DIRECTORY_NAME = "LocationNote";
-
-    private Uri fileUri; // file url to store image/video
-    private ImageView imgPreview;
-    private VideoView videoPreview;
+    private Uri fileUri; // file url to store image
+    // private ImageView imgPreview;
+    // private VideoView videoPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera);
         // Checking camera availability
         if (!isDeviceSupportCamera()) {
             Utility.displayWarning(this, "No camera", "Sorry! Your device doesn't support camera");
@@ -62,12 +53,10 @@ public class CameraActivity extends AppCompatActivity {
             finish();
         }
 
-        imgPreview = (ImageView) findViewById(R.id.imgPreview);
-        videoPreview = (VideoView) findViewById(R.id.videoPreview);
-        if (savedInstanceState != null){
+        if (savedInstanceState != null) {
             activity_launch = savedInstanceState.getBoolean(ACTIVITY_LAUNCH);
         }
-        if ( activity_launch) {
+        if (activity_launch) {
             Bundle extras = getIntent().getExtras();
             int mediaType = extras.getInt(NoteTable.COLUMN_IMAGE);
             initializeView(mediaType);
@@ -81,7 +70,7 @@ public class CameraActivity extends AppCompatActivity {
             captureImage();
         } else if (mediaType == MEDIA_TYPE_VIDEO) {
             // record video
-            recordVideo();
+            //recordVideo();
         } else {
             Utility.displayWarning(this, "Unknown media type", "Please try again");
         }
@@ -102,15 +91,12 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     /*
-     * Capturing Camera Image will lauch camera app requrest image capture
+     * Capturing Camera Image will launch camera app requrest image capture
      */
     private void captureImage() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
         fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-
         intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-
         // start the image capture Intent
         startActivityForResult(intent, CAMERA_CAPTURE_IMAGE_REQUEST_CODE);
     }
@@ -122,38 +108,17 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        // save file url in bundle as it will be null on scren orientation
-        // changes
+        // save file url in bundle as it will be null on screen orientation changes
         outState.putParcelable("file_uri", fileUri);
+        // it will not try to open camera viewfinder. Only open viewfinder for launch
         outState.putBoolean(ACTIVITY_LAUNCH, false);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-
         // get the file url
         fileUri = savedInstanceState.getParcelable("file_uri");
-        Log.i(MapsActivity.TAG, "Got Uri: " + fileUri.getPath());
-    }
-
-    /*
-     * Recording video
-     */
-    private void recordVideo() {
-        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
-        fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-
-        // set video quality
-        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file
-        // name
-
-        // start the video capture Intent
-        startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);
     }
 
     /**
@@ -165,21 +130,6 @@ public class CameraActivity extends AppCompatActivity {
         if (requestCode == CAMERA_CAPTURE_IMAGE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 saveImage();
-                //previewCapturedImage();
-                // successfully captured the image
-                // display it in image view
-                // previewCapturedImage();
-                /*if( saveImage() ){
-                    Bundle bundle = new Bundle();
-                    bundle.putString(NoteTable.COLUMN_IMAGE, capturedImage.getAbsolutePath());
-                    Intent intent = new Intent(this, NoteEditor.class);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                    finish();
-                }else {
-                    Utility.displayWarning(this, "Photo failed", "Sorry fail to take photo.");
-                }*/
-
             } else if (resultCode == RESULT_CANCELED) {
                 // user cancelled Image capture. Just return to previous activity.
                 finish();
@@ -193,7 +143,7 @@ public class CameraActivity extends AppCompatActivity {
             if (resultCode == 0) {
                 // video successfully recorded
                 // preview the recorded video
-                previewVideo();
+                //previewVideo();
             } else if (resultCode == RESULT_CANCELED) {
                 // user cancelled recording
                 Toast.makeText(getApplicationContext(),
@@ -209,77 +159,51 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void saveImage() {
-        final Bitmap bitmap = timeStampImage(fileUri.getPath());
-        if (bitmap != null) {
-            LocationApplication locationApplication = (LocationApplication) getApplication();
-            Bundle bundle = new Bundle();
-            bundle.putFloat(NoteTable.COLUMN_LATITUDE, locationApplication.mLocationInfo.lastLat);
-            bundle.putFloat(NoteTable.COLUMN_LONGITUDE, locationApplication.mLocationInfo.lastLong);
-            if(locationApplication.mTotalAddress == null){
-                locationApplication.mTotalAddress = "debug address";
-            }
-            bundle.putString(NoteTable.COLUMN_ADDRESS, locationApplication.mTotalAddress);
-            bundle.putString(NoteTable.COLUMN_IMAGE, capturedImage.getAbsolutePath());
-            Intent intent = new Intent(this, NoteEditor.class);
-            intent.putExtras(bundle);
-            startActivity(intent);
-            finish();
-        } else {
-            Toast.makeText(this, "Failed to save image!", Toast.LENGTH_LONG).show();
-            ;
-        }
-    }
-
-    /*
-     * Display image from a path to ImageView
-     */
-  /*
-    private void previewCapturedImage() {
-        try {
-            // hide video preview
-            videoPreview.setVisibility(View.GONE);
-
-            imgPreview.setVisibility(View.VISIBLE);
-
-            // bimatp factory
-            BitmapFactory.Options options = new BitmapFactory.Options();
-
-            // downsizing image as it throws OutOfMemory Exception for larger
-            // images
-            options.inSampleSize = 8;
-
-            final Bitmap bitmap = BitmapFactory.decodeFile(fileUri.getPath(),
-                    options);
-           // final Bitmap bitmap = timeStampImage(fileUri.getPath());
-
-            imgPreview.setImageBitmap(bitmap);
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-    }
-*/
-
-    Bitmap timeStampImage(String path) {
+        //final Bitmap bitmap = timeStampImage(fileUri.getPath());
         // bitmap factory
         BitmapFactory.Options options = new BitmapFactory.Options();
         // downsizing image as it throws OutOfMemory Exception for larger images
         options.inSampleSize = 8;
-        final Bitmap srcBitmap = BitmapFactory.decodeFile(path, options);
-        Bitmap destBitmap = Bitmap.createBitmap(srcBitmap.getWidth(), srcBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
+        Bitmap srcBitmap = BitmapFactory.decodeFile(fileUri.getPath(), options);
+        // address and time text to stamped
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-        String dateTime = sdf.format(Calendar.getInstance().getTime()); // reading local time in the system
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm",
-                Locale.getDefault()).format(new Date());
+        String currentTime = sdf.format(Calendar.getInstance().getTime()); // reading local time in the system
         LocationApplication locationApplication = (LocationApplication) getApplication();
+        /*
         String imgText = null;
-        if(locationApplication.mTotalAddress != null){
-             imgText = locationApplication.mTotalAddress+". "+dateTime;
-        }else{
-            imgText = dateTime;
+        if (locationApplication.mTotalAddress != null) {
+            imgText = locationApplication.mTotalAddress + ". " + currentTime;
+        } else {
+            imgText = currentTime;
         }
+        */
+        Bitmap bitmap = textStampedImage(srcBitmap, locationApplication.mTotalAddress, currentTime);
+        if (bitmap != null) {
+            startNoteEditActivity();
+        } else {
+            Toast.makeText(this, "Failed to save image!", Toast.LENGTH_LONG).show();
+        }
+        Utility.deleteFile(fileUri.getPath());
+    }
 
+    void startNoteEditActivity() {
+        LocationApplication locationApplication = (LocationApplication) getApplication();
+        Bundle bundle = new Bundle();
+        bundle.putDouble(NoteTable.COLUMN_LATITUDE, locationApplication.mLocationInfo.lastLat);
+        bundle.putDouble(NoteTable.COLUMN_LONGITUDE, locationApplication.mLocationInfo.lastLong);
+        if (locationApplication.mTotalAddress == null) {
+            locationApplication.mTotalAddress = "debug address";
+        }
+        bundle.putString(NoteTable.COLUMN_ADDRESS, locationApplication.mTotalAddress);
+        bundle.putString(NoteTable.COLUMN_IMAGE, capturedImage.getAbsolutePath());
+        Intent intent = new Intent(this, NoteEditor.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+        finish();
+    }
 
+    Bitmap textStampedImage(Bitmap srcBitmap, String address, String currentTime){
+        Bitmap destBitmap = Bitmap.createBitmap(srcBitmap.getWidth(), srcBitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas cs = new Canvas(destBitmap);
         Paint tPaint = new Paint();
         tPaint.setTextSize(20);
@@ -287,13 +211,14 @@ public class CameraActivity extends AppCompatActivity {
         tPaint.setStyle(Paint.Style.FILL);
         cs.drawBitmap(srcBitmap, 0f, 0f, null);
 
-        float height = tPaint.measureText("yX") / 2;
+        float height = tPaint.measureText("yX");
         //cs.drawText(dateTime, 20f, height+15f, tPaint);
-        cs.drawText(imgText, 0, destBitmap.getHeight() - height, tPaint);
+        cs.drawText(address, 0, destBitmap.getHeight() - height, tPaint);
+        cs.drawText(currentTime, 0, destBitmap.getHeight(), tPaint);
         try {
-            capturedImage = getOutputMediaFile(MEDIA_TYPE_IMAGE," ");
+            capturedImage = getOutputMediaFile(MEDIA_TYPE_IMAGE, " ");
             destBitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(capturedImage));
-            Utility.deleteFile(path);
+            //Utility.deleteFile(path);
             //imgPreview.setImageBitmap(destBitmap);
             return destBitmap;
         } catch (FileNotFoundException e) {
@@ -305,23 +230,6 @@ public class CameraActivity extends AppCompatActivity {
 
     }
 
-    /*
-     * Previewing recorded video
-     */
-    private void previewVideo() {
-        try {
-            // hide image preview
-            imgPreview.setVisibility(View.GONE);
-
-            videoPreview.setVisibility(View.VISIBLE);
-            videoPreview.setVideoPath(fileUri.getPath());
-            // start playing
-            videoPreview.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * ------------ Helper Methods ----------------------
      */
@@ -331,7 +239,7 @@ public class CameraActivity extends AppCompatActivity {
 	 */
     public Uri getOutputMediaFileUri(int type) {
 
-        return Uri.fromFile(getOutputMediaFile(type,""));
+        return Uri.fromFile(getOutputMediaFile(type, ""));
     }
 
     /*
@@ -357,7 +265,7 @@ public class CameraActivity extends AppCompatActivity {
 
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm",
-                Locale.getDefault()).format(new Date())+fileNamePad;
+                Locale.getDefault()).format(new Date()) + fileNamePad;
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator
@@ -371,4 +279,45 @@ public class CameraActivity extends AppCompatActivity {
         }
         return mediaFile;
     }
+
+
+    /*
+     * Recording video
+     */
+  /*
+    private void recordVideo() {
+        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+        fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
+
+        // set video quality
+        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file
+        // name
+
+        // start the video capture Intent
+        startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);
+    }
+*/
+
+    /*
+     * Previewing recorded video
+     */
+  /*
+    private void previewVideo() {
+        try {
+            // hide image preview
+            imgPreview.setVisibility(View.GONE);
+
+            videoPreview.setVisibility(View.VISIBLE);
+            videoPreview.setVideoPath(fileUri.getPath());
+            // start playing
+            videoPreview.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+*/
+
 }

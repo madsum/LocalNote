@@ -27,6 +27,7 @@ public class MapsActivity extends AppCompatActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Marker marker;
+    private LatLng latLng = null;
     private android.support.v7.widget.Toolbar toolbar;
 
 
@@ -92,8 +93,8 @@ public class MapsActivity extends AppCompatActivity {
             LocationApplication locationApplication = (LocationApplication) getApplication();
             if (locationApplication.mLocationInfo != null) {
                 bundle = new Bundle();
-                bundle.putFloat(NoteTable.COLUMN_LATITUDE, locationApplication.mLocationInfo.lastLat);
-                bundle.putFloat(NoteTable.COLUMN_LONGITUDE, locationApplication.mLocationInfo.lastLong);
+                bundle.putDouble(NoteTable.COLUMN_LATITUDE, locationApplication.mLocationInfo.lastLat);
+                bundle.putDouble(NoteTable.COLUMN_LONGITUDE, locationApplication.mLocationInfo.lastLong);
                 if (locationApplication.mTotalAddress == null) {
                     locationApplication.mTotalAddress = "debug address";
                 }
@@ -122,8 +123,6 @@ public class MapsActivity extends AppCompatActivity {
             intent.putExtras(bundle);
             startActivity(intent);
         }
-
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -145,6 +144,7 @@ public class MapsActivity extends AppCompatActivity {
             }
         }
     }
+
 
     private void setCurretnLocation() {
         LocationApplication locationApplication = (LocationApplication) getApplication();

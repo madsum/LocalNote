@@ -32,17 +32,16 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
 
-        <!--
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:name=".MapsActivity"
+            android:label="Location Note" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        -->
+
         <activity
             android:name=".NoteEditor"
             android:label="New Note" >
@@ -51,14 +50,17 @@
                 android:value=".MapsActivity" />
         </activity>
 
-        <provider
-            android:name="com.masum.contentprovider.NoteContentProvider"
-            android:authorities="authority.com.masum.contentprovider"
-            android:exported="true" />
-
         <activity
             android:name=".NoteListActivity"
             android:label="@string/title_activity_note_list" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MapsActivity" />
+        </activity>
+
+        <activity
+            android:name=".CameraActivity"
+            android:label="Camera" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MapsActivity" />
@@ -71,15 +73,11 @@
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".MapsActivity"
-            android:label="@string/title_activity_maps" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <provider
+            android:name="com.masum.contentprovider.NoteContentProvider"
+            android:authorities="authority.com.masum.contentprovider"
+            android:exported="true" />
 
         <service android:name="com.littlefluffytoys.littlefluffylocationlibrary.LocationBroadcastService" />
 
@@ -99,13 +97,7 @@
             android:name="ubertesters_organization_token"
             android:value="56b9aa58-3f62-11e5-a805-22000a9127ac" />-->
         <!-- Ubertesters library token -->
-        <activity
-            android:name=".CameraActivity"
-            android:label="@string/title_activity_camera" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MapsActivity" />
-        </activity>
+
     </application>
 
 </manifest>

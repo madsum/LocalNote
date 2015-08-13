@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.masum.contentprovider.NoteContentProvider;
 import com.masum.database.NoteTable;
+import com.masum.utils.Utility;
 
 import java.util.Calendar;
 
@@ -37,9 +38,10 @@ public class NoteEditor extends AppCompatActivity {
     private TextView mTvDate;
     private TextView mTvImageName;
     private Uri noteUri;
-    private float mLongitude = 0;
-    private float mLatitude = 0;
+    private double mLongitude = 0;
+    private double mLatitude = 0;
     private String mImagePath = null;
+    private int mNoteTableUid = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class NoteEditor extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        // init all view as requied
+        // init all view as required
         initializeEditor(savedInstanceState);
     }
 
@@ -74,16 +76,13 @@ public class NoteEditor extends AppCompatActivity {
                 // it is old note to open with uri. So fill info
                 fillData(noteUri);
             } else {
-                mLongitude = extras.getFloat(NoteTable.COLUMN_LONGITUDE);
-                mLatitude = extras.getFloat(NoteTable.COLUMN_LATITUDE);
+                mLongitude = extras.getDouble(NoteTable.COLUMN_LONGITUDE);
+                mLatitude = extras.getDouble(NoteTable.COLUMN_LATITUDE);
                 // Set address
                 mEtAddress.setText(extras.getString(NoteTable.COLUMN_ADDRESS));
                 mImagePath = extras.getString(NoteTable.COLUMN_IMAGE);
                 if (mImagePath != null) {
-                    String parts[] = mImagePath.split("/");
-                    Log.i(MapsActivity.TAG, "name: " + parts[parts.length - 1]);
-                    // set image name. Array last element is file name
-                    mTvImageName.setText(parts[parts.length - 1]);
+                    mTvImageName.setText(getImageName(mImagePath));
                     mTvImageName.setVisibility(View.VISIBLE);
                 }
 
@@ -97,6 +96,14 @@ public class NoteEditor extends AppCompatActivity {
                 mTvDate.setText(date);
             }
         }
+    }
+
+    String getImageName(String imagePath) {
+        if (imagePath != null) {
+            String parts[] = imagePath.split("/");
+            return parts[parts.length - 1];
+        }
+        return null;
     }
 
     void setEditorBackground(EditText editText) {
@@ -120,9 +127,24 @@ public class NoteEditor extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.editor_save) {
+            saveNote();
             setResult(RESULT_OK);
             startActivity(new Intent(this, NoteListActivity.class));
             finish();
+            return true;
+        }
+
+        if (id == R.id.editor_delete) {
+            if (mNoteTableUid > 0) {
+                Uri uri = Uri.parse(NoteContentProvider.CONTENT_URI + "/" + mNoteTableUid);
+                getContentResolver().delete(uri, null, null);
+                setResult(RESULT_OK);
+                startActivity(new Intent(this, NoteListActivity.class));
+                finish();
+            } else {
+                // nothing to delte from database. Just return to previous activity.
+                finish();
+            }
             return true;
         }
 
@@ -138,7 +160,6 @@ public class NoteEditor extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        //saveNote();
     }
 
     @Override
@@ -148,9 +169,9 @@ public class NoteEditor extends AppCompatActivity {
     }
 
     private void fillData(Uri uri) {
-        String[] projection = {NoteTable.COLUMN_TITLE,
+        String[] projection = {NoteTable.COLUMN_ID, NoteTable.COLUMN_TITLE,
                 NoteTable.COLUMN_DESCRIPTION, NoteTable.COLUMN_DATE,
-                NoteTable.COLUMN_ADDRESS};
+                NoteTable.COLUMN_ADDRESS, NoteTable.COLUMN_IMAGE};
         Cursor cursor = null;
         try {
             cursor = getContentResolver().query(uri, projection, null, null,
@@ -161,7 +182,7 @@ public class NoteEditor extends AppCompatActivity {
 
         if (cursor != null) {
             cursor.moveToFirst();
-
+            mNoteTableUid = cursor.getInt(cursor.getColumnIndex(NoteTable.COLUMN_ID));
             mTvDate.setText(cursor.getString(cursor.
                     getColumnIndexOrThrow(NoteTable.COLUMN_DATE)));
             mEtTile.setText(cursor.getString(cursor.
@@ -170,6 +191,14 @@ public class NoteEditor extends AppCompatActivity {
                     getColumnIndexOrThrow(NoteTable.COLUMN_DESCRIPTION)));
             mEtAddress.setText(cursor.getString(cursor.
                     getColumnIndexOrThrow(NoteTable.COLUMN_ADDRESS)));
+            String imagePath = cursor.getString(cursor.getColumnIndexOrThrow(NoteTable.COLUMN_IMAGE));
+            if (imagePath != null) {
+                mImagePath = imagePath;
+                mTvImageName.setText(getImageName(imagePath));
+                mTvImageName.setVisibility(View.VISIBLE);
+            } //else {
+               // Toast.makeText(this, "No image found for this note", Toast.LENGTH_LONG).show();
+            //}
             // always close the cursor
             cursor.close();
         }
@@ -198,6 +227,7 @@ public class NoteEditor extends AppCompatActivity {
         values.put(NoteTable.COLUMN_TITLE, title);
         values.put(NoteTable.COLUMN_DESCRIPTION, description);
         values.put(NoteTable.COLUMN_ADDRESS, address);
+        values.put(NoteTable.COLUMN_IMAGE, mImagePath);
         values.put(NoteTable.COLUMN_LATITUDE, mLatitude);
         values.put(NoteTable.COLUMN_LONGITUDE, mLongitude);
 
@@ -211,41 +241,29 @@ public class NoteEditor extends AppCompatActivity {
     }
 
     public void showPopup(View view) {
-
         View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
-
         PopupWindow popupWindow = new PopupWindow(popupView,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
-
         // Example: If you have a TextView inside `popup_layout.xml`
         ImageView imageView = (ImageView) popupView.findViewById(R.id.popupImageView);
         if (mImagePath != null) {
-            imageView.setImageBitmap(BitmapFactory.decodeFile(mImagePath));
-        }else{
-            Toast.makeText(this, "Image not found!",Toast.LENGTH_LONG).show();
+            if (Utility.fileExist(mImagePath)) {
+                imageView.setImageBitmap(BitmapFactory.decodeFile(mImagePath));
+            } else {
+                Toast.makeText(this, "Image not found!", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(this, "Image not found!", Toast.LENGTH_LONG).show();
         }
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
-
         // If you need the PopupWindow to dismiss when when touched outside
         popupWindow.setBackgroundDrawable(new ColorDrawable());
-
         int location[] = new int[2];
-
         // Get the View's(the one that was clicked in the Fragment) location
         view.getLocationOnScreen(location);
-
         // Using location, the PopupWindow will be displayed right under anchorView
         popupWindow.showAtLocation(view, Gravity.NO_GRAVITY,
                 location[0], location[1] + view.getHeight());
-
-    }
-
-    public void justClick(View view) {
-        showPopup(view);
-    }
-
-    public void clikMe(View view) {
-        Log.i("","got you");
     }
 }
