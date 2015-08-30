@@ -46,6 +46,7 @@ public class MapsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         setTitle("Map");
+        getSupportActionBar().setIcon(R.drawable.location_note);
     }
 
     private boolean checkGpsNetworkStatus() {

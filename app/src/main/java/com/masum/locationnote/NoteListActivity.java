@@ -43,6 +43,8 @@ public class NoteListActivity extends AppCompatActivity implements
         setSupportActionBar(mToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle("Note list");
+        getSupportActionBar().setIcon(R.drawable.location_note);
         fillData();
     }
 
