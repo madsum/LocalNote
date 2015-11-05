@@ -27,6 +27,8 @@ public class LocationApplication extends Application {
         initializeLocationLibrary();
         mLocationInfo = new LocationInfo(this);
         setCurrentLocationInfo();
+        //mLocationInfo.lastLat = (float) 53.473105;
+        //mLocationInfo.lastLong = (float) -2.297172;
         setCompleteAddress();
        // Log.i(MapsActivity.TAG, "##### Application called: ");
        // Log.d("TestApplication", "onCreate()");

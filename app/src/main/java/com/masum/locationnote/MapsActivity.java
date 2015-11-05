@@ -1,5 +1,6 @@
 package com.masum.locationnote;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -28,6 +29,7 @@ public class MapsActivity extends AppCompatActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Marker marker;
     private LatLng latLng = null;
+    private ProgressDialog progressBar;
     private android.support.v7.widget.Toolbar toolbar;
 
 
@@ -36,17 +38,19 @@ public class MapsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+       // displayProgressbar();
         setContentView(R.layout.activity_maps);
+        displayProgressbar();
         boolean status = checkGpsNetworkStatus();
         if (!status) {
-
+            progressBar.dismiss();
         }
         setUpMapIfNeeded();
         toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         setTitle("Map");
-        getSupportActionBar().setIcon(R.drawable.location_note);
+        getSupportActionBar().setIcon(R.drawable.ic_action_app_bar_icon);
     }
 
     private boolean checkGpsNetworkStatus() {
@@ -141,6 +145,7 @@ public class MapsActivity extends AppCompatActivity {
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
+                progressBar.dismiss();
                 setCurretnLocation();
             }
         }
@@ -181,4 +186,17 @@ public class MapsActivity extends AppCompatActivity {
             Log.e(TAG, "no location found");
         }
     }
+
+    private void displayProgressbar() {
+        progressBar = new ProgressDialog(this);
+        progressBar.setCancelable(true);
+        progressBar.setMessage("Searching location ...");
+        progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressBar.setProgress(0);
+        progressBar.setMax(100);
+        progressBar.show();
+        progressBar.setCancelable(false);
+        progressBar.setCanceledOnTouchOutside(false);
+    }
+
 }

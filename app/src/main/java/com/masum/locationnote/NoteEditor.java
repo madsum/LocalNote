@@ -53,7 +53,7 @@ public class NoteEditor extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle("Editor");
-        getSupportActionBar().setIcon(R.drawable.location_note);
+        getSupportActionBar().setIcon(R.drawable.ic_action_app_bar_icon);
         // init all view as required
         initializeEditor(savedInstanceState);
     }
